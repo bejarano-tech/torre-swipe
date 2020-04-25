@@ -1,62 +1,109 @@
+import React, { useState } from 'react';
 import Head from 'next/head'
+import fetch from 'node-fetch'
 
-export default function Home() {
+
+import { Swipeable, direction } from 'react-deck-swiper';
+
+import classNames from 'classnames';
+
+import Typography from '@material-ui/core/Typography';
+import IconButton from '@material-ui/core/IconButton';
+import Grid from '@material-ui/core/Grid';
+
+import CardButtons from '../components/CardButtons';
+import Card from '../components/Card';
+
+import useStyles from '../src/styles';
+
+export default function Home({opportunities}) {
+
+  const classes = useStyles();
+
+  const [lastSwipeDirection, setLastSwipeDirection] = useState(null);
+  const [cards, setCards] = useState(opportunities);
+
+  const handleOnSwipe = (swipeDirection) => {
+    if (swipeDirection === direction.RIGHT) {
+      setLastSwipeDirection('your right');
+    }
+
+    if (swipeDirection === direction.LEFT) {
+      setLastSwipeDirection('your left');
+    }
+
+    setCards((prev) => prev.slice(1));
+  };
+
+  const renderButtons = ({
+    right,
+    left,
+  }) => (
+    <CardButtons
+      right={right}
+      left={left}
+    />
+  );
+
   return (
     <div className="container">
       <Head>
-        <title>Create Next App</title>
+        <title>Torre Swiper</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main>
         <h1 className="title">
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+          Welcome to <a href="https://nextjs.org">Torre Swiper!</a>
         </h1>
 
         <p className="description">
-          Get started by editing <code>pages/index.js</code>
+          Get started searching your <br/><code>Dream Job</code>
         </p>
 
-        <div className="grid">
-          <a href="https://nextjs.org/docs" className="card">
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
+        <Grid container spacing={3} className={classes.centerContent}>
+        {
+          cards.length > 0 && (
+            <Grid item xs={12} className={classNames(classes.marginTop2, classes.centerContent)}>
+              {
+                lastSwipeDirection
+                  ? (
+                    <Typography variant="body1">
+                      {'Looks like you have just swiped to '}
+                      {lastSwipeDirection}
+                      ? 🔮
+                    </Typography>
+                  )
+                  : (
+                    <Typography variant="body1">
+                      Try swiping the card below to Quick Apply!
+                    </Typography>
+                  )
+              }
+            </Grid>
+          )
+        }
+        </Grid>
 
-          <a href="https://nextjs.org/learn" className="card">
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/zeit/next.js/tree/master/examples"
-            className="card"
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://zeit.co/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="card"
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with ZEIT Now.
-            </p>
-          </a>
-        </div>
+        <Grid item xs={12} className={classNames(classes.marginTop2, classes.centerContent)}>
+        {
+          cards.length > 0
+            ? (
+              <Swipeable
+                renderButtons={renderButtons}
+                onSwipe={handleOnSwipe}
+              >
+                <Card item={cards[0]} />
+              </Swipeable>
+            )
+            : (
+              <Typography variant="body1">
+                Looks like you have reached the end here =)
+              </Typography>
+            )
+          }
+          </Grid>
       </main>
-
-      <footer>
-        <a
-          href="https://zeit.co?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by <img src="/zeit.svg" alt="ZEIT Logo" />
-        </a>
-      </footer>
 
       <style jsx>{`
         .container {
@@ -102,7 +149,7 @@ export default function Home() {
         }
 
         .title a {
-          color: #0070f3;
+          color: #cddc39;
           text-decoration: none;
         }
 
@@ -129,8 +176,7 @@ export default function Home() {
         }
 
         code {
-          background: #fafafa;
-          border-radius: 5px;
+          color: #cddc39;
           padding: 0.75rem;
           font-size: 1.1rem;
           font-family: Menlo, Monaco, Lucida Console, Liberation Mono,
@@ -193,6 +239,8 @@ export default function Home() {
           font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
             Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue,
             sans-serif;
+          background: #27292D;
+          color: #ffffff;
         }
 
         * {
@@ -201,4 +249,26 @@ export default function Home() {
       `}</style>
     </div>
   )
+}
+
+// This function gets called at build time on server-side.
+// It won't be called on client-side, so you can even do
+// direct database queries. See the "Technical details" section.
+export async function getStaticProps() {
+  // Call an external API endpoint to get posts.
+  const body = {};
+
+  const res = await fetch('https://search.torre.co/opportunities/_search', {
+    method: 'post',
+    body: JSON.stringify(body),
+    headers: {'Content-Type': 'application/json'}
+  })
+  const response = await res.json();
+  const opportunities = response.results;
+
+  return {
+    props: {
+      opportunities,
+    },
+  }
 }
