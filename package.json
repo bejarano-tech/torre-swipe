@@ -12,7 +12,7 @@
     "@material-ui/icons": "^4.9.1",
     "classnames": "^2.2.6",
     "next": "9.3.5",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^3.1.1",
     "react": "16.13.1",
     "react-date-countdown-timer": "^1.0.4",
     "react-deck-swiper": "^1.0.9",
